@@ -1,9 +1,10 @@
 #!/bin/sh
 
-# Script sh récupérateur XMLTV pour http://www.kazer.org/
-# Script d'origine par Stéphane DUBOIS, hébergé sur Github: https://github.com/clark17/tv_grab_FR_Kazer/
+# Shell script to recover xmltv from http://www.kazer.org/
+# Updated by Aymeric LAMBRECHT
+# Original script by Stéphane DUBOIS, hosted on Github: https://github.com/clark17/tv_grab_FR_Kazer/
 
-# Définition des variables
+# Definitions of variables
 TMPFILE=""
 USERHASH="your_userhash_here"
 DEBUG=1
@@ -36,8 +37,8 @@ then
   OPTION=$1
 
   if [ "--version" = "$OPTION" ] ; then
-    echo "XMLTV module version 0.2"
-    echo "Voici tv_grab_kazer version 0.2, 2013/06/12 20:00:00"
+    echo "XMLTV module version 0.3"
+    echo "This is tv_grab_kazer version 0.3, 2016/07/02 15:00:00"
     exit
   fi
 
@@ -47,7 +48,7 @@ then
   fi
 
   if [ "--debug" = "$OPTION" ] ; then
-    echo "Mode debug activé"
+    echo "Mode debug enabled"
     DEBUG=0
   else
     usage
@@ -56,7 +57,7 @@ then
 
 fi
 
-# Définition de votre User Hash
+# Set Kazer URL with your Userhash
 KAZERURL="http://www.kazer.org/tvguide.zip?u=$USERHASH"
 
 if [ -z "$KAZERURL" ]
@@ -65,23 +66,23 @@ then
   exit 1
 fi
 
-# Nom du zip avec le PID du shell courant
+# Name of ZIP with current shell PID
 TMPFILE="/tmp/$$.xmltv.zip"
 
-# Capturer si le script s'arrête
+# Check if the script is stopped
 trap "_stop" 1 2 3 15
 
-# Téléchargement du fichier xmltv.zip
+# Downloading of xmltv.zip
 wget -q "$KAZERURL" -O "$TMPFILE"
 RETURN_WGET=$?
 
-# On vérifie si on a pu télécharger xmltv.zip
+# We check if we have succeeded in donwloading the zipfile
 if [ $RETURN_WGET -eq 0 ]
 then
-  # Extraction du zip
+  # Extraction of zipfile
   unzip -q -o "$TMPFILE" -d /tmp/
 
-  # Effectue la correspondance entre les catégories de Kazer et celles de TVHeadEnd
+  # Migrate category for TVHeadend
   sed -ri 's/<category lang="fr">Clips/<category lang="fr">Music \/ Ballet \/ Dance/g' /tmp/tvguide.xml
   sed -ri 's/<category lang="fr">Concert/<category lang="fr">Music \/ Ballet \/ Dance/g' /tmp/tvguide.xml
   sed -ri 's/<category lang="fr">Débat/<category lang="fr">Social \/ Political issues \/ Economics/g' /tmp/tvguide.xml
@@ -109,7 +110,7 @@ then
   sed -ri 's/<category lang="fr">Théâtre/<category lang="fr">Arts \/ Culture \(without music\)/g' /tmp/tvguide.xml
   sed -ri 's/<category lang="fr">Variétés/<category lang="fr">Arts \/ Culture \(without music\)/g' /tmp/tvguide.xml
 
-  # Effacement des fichiers temporaires
+  # Delete temporary files
   rm "$TMPFILE"
 
 else
@@ -117,12 +118,12 @@ else
   then
     if [ $RETURN_WGET -eq 8 ]
     then
-      echo "Aucune modification du guide depuis le dernier téléchargement"
+      echo "No changes have occurred since the last update"
     else
-      echo "Impossible de télécharger le zip"
+      echo "Unable to download the last update"
     fi
   fi
 fi
 
-# Affichage du contenu de tvguide.xml
+# Print content of XML File
 cat /tmp/tvguide.xml

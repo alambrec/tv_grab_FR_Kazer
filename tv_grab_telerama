@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# Shell script to recover xmltv from http://xmltv.dtdns.net
+# Author : Aymeric LAMBRECHT
+
+# Definition of variables
+TMPFILE=""
+OS=`uname -s`
+USERNAME="your_username_here"
+DEBUG=1
+ZIP_LINK="http://xmltv.dtdns.net/alacarte/ddl?fichier=/xmltv_site/xmlPerso/$USERNAME.zip"
+XMLTV_PATH="/tmp/$USERNAME.xml"
+
+# Commande stop
+_stop()
+{
+  if [ -n $TMPFILE ]
+  then
+    rm "$TMPFILE"
+    rm "$XMLTV_PATH"
+  fi
+  exit 1
+}
+
+# Commande usage
+usage()
+{
+  echo "usage : $0 [--version|--description]"
+  exit 1;
+}
+
+if [ $# -gt 1 ]
+then
+  usage
+fi
+
+if [ $# -eq 1 ]
+then
+  OPTION=$1
+
+  if [ "--version" = "$OPTION" ] ; then
+    echo "XMLTV module version 1.0"
+    echo "This is tv_grab_telerama version 1.0, 2016/07/02 15:00:00"
+    exit
+  fi
+
+  if [ "--description" = "$OPTION" ] ; then
+    echo "France Télérama"
+    exit
+  fi
+
+  if [ "--debug" = "$OPTION" ] ; then
+    echo "Mode debug enabled"
+    DEBUG=0
+  else
+    usage
+    exit
+  fi
+
+fi
+
+if [ -z "$ZIP_LINK" ]
+then
+  echo "No valid ZIP_LINK="<url>" set" >&2
+  exit 1
+fi
+
+# Name of ZIP with current shell PID
+TMPFILE="/tmp/$$.xmltv.zip"
+
+# Check if the script is stopped
+trap "_stop" 1 2 3 15
+
+# Downloading of xmltv.zip
+wget -q "$ZIP_LINK" -O "$TMPFILE"
+RETURN_WGET=$?
+
+# We check if we have succeeded in donwloading the zipfile
+if [ $RETURN_WGET -eq 0 ]
+then
+  # Extraction of zipfile
+  unzip -q -o "$TMPFILE" -d /tmp/
+
+  # Remove the second category attributes for each programs in XML File (useless for TVHeadend)
+  sed -ri 'N; /(^[[:space:]]*<category)[^\n]*\n\1/ s/\n.*//; P; D' "$XMLTV_PATH"
+
+  # Migrate category for TVHeadend
+  sed -ri 's/<category lang="fr">Clips/<category lang="fr">Music \/ Ballet \/ Dance/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Concert/<category lang="fr">Music \/ Ballet \/ Dance/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Ballet/<category lang="fr">Music \/ Ballet \/ Dance/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Débat/<category lang="fr">Social \/ Political issues \/ Economics/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Dessin animé/<category lang="fr">Children'"'"'s \/ Youth programmes/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Divertissement/<category lang="fr">Show \/ Game show/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Divers/<category lang="fr">Variety show/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Documentaire/<category lang="fr">Education \/ Science \/ Factual topics/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Émission/<category lang="fr">Show \/ Game show/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Feuilleton/<category lang="fr">Movie \/ Drama/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Film/<category lang="fr">Movie \/ Drama/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Fitness/<category lang="fr">Fitness and health/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Interview/<category lang="fr">News \/ Current affairs/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Jeu/<category lang="fr">Show \/ Game show/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Jeunesse/<category lang="fr">Children'"'"'s \/ Youth programmes/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Journal/<category lang="fr">News \/ Current affairs/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Loterie/<category lang="fr">Show \/ Game show/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Magazine/<category lang="fr">Education \/ Science \/ Factual topics/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Météo/<category lang="fr">News \/ Current affairs/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Opéra/<category lang="fr">Arts \/ Culture \(without music\)/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Politique/<category lang="fr">Social \/ Political issues \/ Economics/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Série/<category lang="fr">Movie \/ Drama/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Spectacle/<category lang="fr">Arts \/ Culture \(without music\)/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Sport/<category lang="fr">Sports/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Talk show/<category lang="fr">Show \/ Game show/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Téléfilm/<category lang="fr">Movie \/ Drama/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Téléréalité/<category lang="fr">Show \/ Game show/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Théâtre/<category lang="fr">Arts \/ Culture \(without music\)/g' "$XMLTV_PATH"
+  sed -ri 's/<category lang="fr">Variétés/<category lang="fr">Arts \/ Culture \(without music\)/g' "$XMLTV_PATH"
+
+  # Delete temporary files
+  rm "$TMPFILE"
+
+else
+  if [ $DEBUG -eq 0 ]
+  then
+    if [ $RETURN_WGET -eq 8 ]
+    then
+      echo "No changes have occurred since the last update"
+    else
+      echo "Unable to download the last update"
+    fi
+  fi
+fi
+
+# Print content of XML File
+cat "$XMLTV_PATH"
