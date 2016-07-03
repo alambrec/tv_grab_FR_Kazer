@@ -15,9 +15,9 @@ Like I have some problem in using kazer.org, I add also support for http://xmltv
  - for Kazer.org : replace at the line 8 `your_userhash_here` by your userhash on kazer.org (available on tab 'Mes Chaînes')
  - for Dtdns.net : replace at the line 9 `your_username_here` by your username on xmltv.dtdns.net.org 
 2. Place your script on your binary folder (for Synology NAS in `/usr/bin/`).
-3. Change owner and group : `chown root:root tv_grab_kazer`
-4. Change permission to make it executable :  `chmod 755 tv_grab_kazer`
-5. Test your script in running like this : `tv_grab_kazer  --debug`
+3. Change owner and group : `chown root:root tv_grab_kazer` or `chown root:root tv_grab_telerama`
+4. Change permission to make it executable :  `chmod 755 tv_grab_kazer` or `chmod 755 tv_grab_telerama`
+5. Test your script in running like this : `tv_grab_kazer  --debug` or `tv_grab_telerama  --debug`
   * you must see on the screen the content of XML.
 6. Set France Kazer or France Telerama like Internal Grabber XMLTV on TVHeadEnd.
 
