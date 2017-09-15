@@ -1,5 +1,7 @@
 # XML TV Grabber for TVheadend
 
+**:warning: Source from http://xmltv.dtdns.net is not available since September 2017**
+
 This is a simple script to recover EPG guide for TVHeadend backend.
 It's optimized for Synology NAS but it must compatible on every Linux/GNU System. (Not on BSD like OSX)
 
