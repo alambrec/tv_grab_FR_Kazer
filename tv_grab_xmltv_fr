@@ -1,0 +1,312 @@
+#!/bin/sh
+
+# Shell script to recover xmltv from http://xmltv.dtdns.net
+# Author : Aymeric LAMBRECHT
+
+# Definition of variables
+TMPFILE=""
+OS=`uname -s`
+DEBUG=1
+ZIP_LINK="http://www.xmltv.fr/guide/tvguide.zip"
+XMLTV_PATH="/tmp/tvguide.xml"
+
+# Commande stop
+_stop()
+{
+  if [ -n $TMPFILE ]
+  then
+    rm "$TMPFILE"
+    rm "$XMLTV_PATH"
+  fi
+  exit 1
+}
+
+# Commande usage
+usage()
+{
+  echo "usage : $0 [--version|--description|--debug]"
+  exit 1;
+}
+
+if [ $# -gt 1 ]
+then
+  usage
+fi
+
+if [ $# -eq 1 ]
+then
+  OPTION=$1
+
+  if [ "--version" = "$OPTION" ] ; then
+    echo "XMLTV module version 1.0"
+    echo "This is tv_grab_xmltv_fr version 1.0, 2017/11/06 17:00:00"
+    exit
+  fi
+
+  if [ "--description" = "$OPTION" ] ; then
+    echo "XMLTV Fr"
+    exit
+  fi
+
+  if [ "--debug" = "$OPTION" ] ; then
+    echo "Mode debug enabled"
+    DEBUG=0
+  else
+    usage
+    exit
+  fi
+
+fi
+
+if [ -z "$ZIP_LINK" ]
+then
+  echo "No valid ZIP_LINK="<url>" set" >&2
+  exit 1
+fi
+
+# Name of ZIP with current shell PID
+TMPFILE="/tmp/$$.xmltv.zip"
+
+# Check if the script is stopped
+trap "_stop" 1 2 3 15
+
+# Downloading of xmltv.zip
+wget -q "$ZIP_LINK" -O "$TMPFILE"
+RETURN_WGET=$?
+
+# We check if we have succeeded in donwloading the zipfile
+if [ $RETURN_WGET -eq 0 ]
+then
+  # Extraction of zipfile
+  unzip -q -o "$TMPFILE" -d /tmp/
+
+  # Migrate category for TVHeadend
+  sed -ri "s/<category lang=\"fr\">autre/<category lang=\"fr\">Others/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">clips/<category lang=\"fr\">Music / Ballet / Dance/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">classique/<category lang=\"fr\">Serious / Classical / Religious / Historical movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">concert/<category lang=\"fr\">Music / Ballet / Dance/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">cyclisme/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">ballet/<category lang=\"fr\">Music / Ballet / Dance/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">débat/<category lang=\"fr\">Social / Political issues / Economics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">dessin animé/<category lang=\"fr\">Social / Political issues / Economics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">divertissement/<category lang=\"fr\">Show / Game show/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">divertissement-humour/<category lang=\"fr\">Show / Game show/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">divers/<category lang=\"fr\">Variety show/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">Émission/<category lang=\"fr\">Show / Game show/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">feuilleton/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">humour/<category lang=\"fr\">Comedy/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">fitness/<category lang=\"fr\">Fitness and health/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">fin/<category lang=\"fr\">fin/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">jazz/<category lang=\"fr\">Jazz/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">jeu/<category lang=\"fr\">News / Current affairs/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">jeunesse/<category lang=\"fr\">Children's / Youth programmes/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">journal/<category lang=\"fr\">News / Current affairs/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">kick-boxing/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">loterie/<category lang=\"fr\">Show / Game show/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">météo/<category lang=\"fr\">News / Current affairs/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">opéra/<category lang=\"fr\">Arts / Culture (without music)/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">oratorio/<category lang=\"fr\">Arts / Culture (without music)/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">politique/<category lang=\"fr\">Social / Political issues / Economics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">programme indéterminé/<category lang=\"fr\">Others/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">pop/<category lang=\"fr\">Rock / Pop/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">reggae/<category lang=\"fr\">Folk / Traditional music/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">rock/<category lang=\"fr\">Rock / Pop/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">spectacle/<category lang=\"fr\">Arts / Culture (without music)/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">talk show/<category lang=\"fr\">Show / Game show/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm érotique/<category lang=\"fr\">Adult movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléréalité/<category lang=\"fr\">Show / Game show/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">théâtre/<category lang=\"fr\">Arts / Culture (without music)/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">triathlon/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">variétés/<category lang=\"fr\">Arts / Culture (without music)/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">vtt/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  # Extra match
+  sed -ri "s/<category lang=\"fr\">documentaire : découvertes/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : voyage/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine jeunesse/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine du tourisme/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : société/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : environnement/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : drame/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de découvertes/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : nature/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine d'actualité/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série d'animation/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : biographie/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : cinéma/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : animalier/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine culturel/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : politique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film fantastique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine d'information/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : histoire/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : fiction/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : géopolitique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film de suspense/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : sport/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm dramatique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine musical/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm historique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : fantastique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : culture/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">pop %26 rock/<category lang=\"fr\">Rock / Pop/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : musique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine politique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : sciences et technique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : gastronomie/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de géopolitique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de société/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine du court métrage/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : education/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm sentimental/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : musique classique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film policier/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : western/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film documentaire/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : justice/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film d'aventures/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série de science-fiction/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film de science-fiction/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine du show-biz/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine sportif/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de l'économie/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de reportages/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">emission politique/<category lang=\"fr\">Social / Political issues / Economics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">jeunesse : dessin animé/<category lang=\"fr\">Children's / Youth programmes/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de télé-achat/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série dramatique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série humoristique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : téléréalité/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série judiciaire/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm humoristique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine culinaire/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm d'aventures/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm de suspense/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série policière/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine du cinéma/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série fantastique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de l'automobile/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine scientifique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : comédie sentimentale/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm pour la jeunesse/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série de téléréalité/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : comédie dramatique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film historique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : thriller/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine historique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm policier/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : comédie/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : aventures/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : multisports/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : pétanque/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : football/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : cyclisme sur piste/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : boxe/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : fitness/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : bobsleigh/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : rugby/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : skeleton/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : judo/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">boxe/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : ski freestyle/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : rallycross/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : rallye/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm biographique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">feuilleton sentimental/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série sentimentale/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de la décoration/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film d'animation/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine des loisirs/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm d'animation/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série réaliste/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série burlesque/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série hospitalière/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de la gastronomie/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : péplum/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série d'action/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film d'action/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">one man show/<category lang=\"fr\">Show / Game show/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">pièce de théâtre/<category lang=\"fr\">Social / Political issues / Economics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série de suspense/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine du consommateur/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">feuilleton réaliste/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de services/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de la mer/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">emission du bien-être/<category lang=\"fr\">Social / Political issues / Economics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de la femme/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">rap/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine littéraire/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm romanesque/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sports mécaniques/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine hippique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">jt sport/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm fantastique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm d'action/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de l'art de vivre/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">débat parlementaire/<category lang=\"fr\">Social / Political issues / Economics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : santé/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : economie/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : autre/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : e-sport/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : basket-ball/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : hockey sur glace/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : golf/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : documentaire/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : court métrage/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : aventure/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine pornographique/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série jeunesse/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm de guerre/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : voile/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine du multimédia/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : formule 1/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">sport : cesta punta/<category lang=\"fr\">Sports/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série culinaire/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine religieux/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">emission spéciale/<category lang=\"fr\">Social / Political issues / Economics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm de science-fiction/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film catastrophe/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine animalier/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">téléfilm féerique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">jeunesse : dessin animé manga/<category lang=\"fr\">Children's / Youth programmes/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de charme/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de la santé/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : religions/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">documentaire : civilisations/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine du jardinage/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine éducatif/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine de l'environnement/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">emission jeunesse/<category lang=\"fr\">Social / Political issues / Economics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">jeunesse : dessin animé d'animation/<category lang=\"fr\">Children's / Youth programmes/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film d'espionnage/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">jeunesse : dessin animé jeunesse/<category lang=\"fr\">Children's / Youth programmes/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série musicale/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">film : court métrage d'animation/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">magazine régional/<category lang=\"fr\">Education / Science / Factual topics/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série d'aventures/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">opéra bouffe/<category lang=\"fr\">Arts / Culture (without music)/g" "$XMLTV_PATH"
+  sed -ri "s/<category lang=\"fr\">série historique/<category lang=\"fr\">Movie / Drama/g" "$XMLTV_PATH"
+
+
+  # Delete temporary files
+  rm "$TMPFILE"
+
+else
+  if [ $DEBUG -eq 0 ]
+  then
+    if [ $RETURN_WGET -eq 8 ]
+    then
+      echo "No changes have occurred since the last update"
+    else
+      echo "Unable to download the last update"
+    fi
+  fi
+fi
+
+# Print content of XML File
+cat "$XMLTV_PATH"
