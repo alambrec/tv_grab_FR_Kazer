@@ -4,14 +4,15 @@
 # Author : Aymeric LAMBRECHT
 
 # Definition of variables
-TMPFILE=""
 OS=`uname -s`
 DEBUG=1
 ZIP_LINK="http://www.xmltv.fr/guide/tvguide.zip"
-ZIP_PATH="./tmp/$$.xmltv.zip"
-EXTRACT_DIR="./tmp/"
-XMLTV_PATH="./tmp/tvguide.xml"
-SED_COMMAND="gsed -ri"
+ZIP_PATH="/tmp/xmltv/$$.xmltv.zip"
+WORKING_DIR="/tmp/xmltv/"
+XMLTV_PATH="/tmp/xmltv/tvguide.xml"
+SC_USER="sc-tvheadend"
+SC_GROUP="sc-media"
+SED_COMMAND="sed -ri"
 SED_PARAMS=" \
   s|<category lang=\"fr\">autre</category>|<category lang=\"fr\">Others</category>|g;\
   s|<category lang=\"fr\">clips</category>|<category lang=\"fr\">Music / Ballet / Dance</category>|g;\
@@ -238,10 +239,9 @@ SED_PARAMS=" \
 # Commande stop
 _stop()
 {
-  if [ -n $TMPFILE ]
+  if [ -d "$WORKING_DIR" ]
   then
-    rm "$TMPFILE"
-    rm "$XMLTV_PATH"
+    rm -fr "$WORKING_DIR"
   fi
   exit 1
 }
@@ -264,7 +264,7 @@ then
 
   if [ "--version" = "$OPTION" ] ; then
     echo "XMLTV module version 1.0"
-    echo "This is tv_grab_xmltv_fr version 1.0, 2017/11/06 17:00:00"
+    echo "tv_grab_xmltv_fr v1.0, 2017/11/06 17:00:00"
     exit
   fi
 
@@ -283,10 +283,12 @@ then
 
 fi
 
-if [ -z "$ZIP_LINK" ]
+if [ ! -d "$WORKING_DIR" ]
 then
-  echo "No valid ZIP_LINK="<url>" set" >&2
-  exit 1
+  #echo "Create xmltv directory"
+  mkdir "$WORKING_DIR"
+  chown $SC_USER:$SC_GROUP "$WORKING_DIR"
+  chmod 755 "$WORKING_DIR"
 fi
 
 # Check if the script is stopped
@@ -300,7 +302,8 @@ RETURN_WGET=$?
 if [ $RETURN_WGET -eq 0 ]
 then
   # Extraction of zipfile
-  unzip -q -o "$ZIP_PATH" -d "$EXTRACT_DIR"
+  # unzip -q -o "$ZIP_PATH" -d "$WORKING_DIR"
+  7z x "$ZIP_PATH" -o"$WORKING_DIR" -y > /dev/null
 
   # Migrate category for TVHeadend
   # echo "SED catagories migration"
