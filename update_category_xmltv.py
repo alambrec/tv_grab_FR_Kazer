@@ -25,6 +25,9 @@ def init_categories():
     match_category['autre'] = 'Others'
     match_category['clips'] = 'Music / Ballet / Dance'
     match_category['classique'] = 'Serious / Classical / Religious / Historical movie / Drama'
+    match_category['cérémonie'] = 'News / Current affairs'
+    match_category['cirque'] = 'Sports'
+    match_category['chorégraphique'] = 'Music / Ballet / Dance'
     match_category['concert'] = 'Music / Ballet / Dance'
     match_category['cyclisme'] = 'Sports'
     match_category['ballet'] = 'Music / Ballet / Dance'
@@ -40,6 +43,8 @@ def init_categories():
     match_category['film'] = 'Movie / Drama'
     match_category['fitness'] = 'Fitness and health'
     match_category['fin'] = 'fin'
+    match_category['hippisme'] = 'Sports'
+    match_category['interview'] = 'Show / Game show'
     match_category['jazz'] = 'Jazz'
     match_category['jeu'] = 'News / Current affairs'
     match_category['jeunesse'] = 'Children\'s / Youth programmes'
@@ -48,11 +53,13 @@ def init_categories():
     match_category['loterie'] = 'Show / Game show'
     match_category['météo'] = 'News / Current affairs'
     match_category['magazine'] = 'Education / Science / Factual topics'
+    match_category['marathon'] = 'Sports'
     match_category['opéra'] = 'Arts / Culture (without music)'
     match_category['oratorio'] = 'Arts / Culture (without music)'
     match_category['politique'] = 'Social / Political issues / Economics'
     match_category['programme indéterminé'] = 'Others'
     match_category['pop'] = 'Rock / Pop'
+    match_category['rap'] = 'Music / Ballet / Dance'
     match_category['reggae'] = 'Folk / Traditional music'
     match_category['rock'] = 'Rock / Pop'
     match_category['série'] = 'Movie / Drama'
@@ -148,10 +155,18 @@ def match_categories():
 
 def generate_categories_sed():
     for key, value in match_category.items():
-        # safestr = value.replace('/', '\/')
-        safestr = value
+        #safestr = value.replace('/', '\/').replace('\'', '\'"\'"\'')
+        safestr = value.replace("\"", "\\\"")
+        #safekey = key.replace('\'', '\'"\'"\'')
+        safekey = key.replace("\"", "\\\"")
+        # safestr = value
         # logging.debug("sed -ri 's/<category lang=\"fr\">%s/<category lang=\"fr\">%s/g' \"$XMLTV_PATH\"", key, safestr)
-        print("sed -ri \"s/<category lang=\\\"fr\\\">{}/<category lang=\\\"fr\\\">{}/g\" \"$XMLTV_PATH\"".format(key, safestr))
+        # print("sed -ri \"s/<category lang=\\\"fr\\\">{}/<category lang=\\\"fr\\\">{}/g\" \"$XMLTV_PATH\"".format(key, safestr))
+        # print("$SED_COMMAND \'s/<category lang=\\\"fr\\\">{}/<category lang=\\\"fr\\\">{}/g\' \"$XMLTV_PATH\"".format(key, safestr))
+        #print("echo \"{} -> {}\"".format(safekey, safestr))
+        #print("$SED_COMMAND \"s|<category lang=\\\"fr\\\">{}</category>|<category lang=\\\"fr\\\">{}</category>|g\" \"$XMLTV_PATH\"".format(safekey, safestr))
+        print("s|<category lang=\\\"fr\\\">{}</category>|<category lang=\\\"fr\\\">{}</category>|g;\\".format(safekey, safestr))
+
 
 def main():
     init_categories()
