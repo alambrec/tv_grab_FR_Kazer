@@ -10,12 +10,21 @@ My script recovers XMLTV file from https://xmltv.ch.
 ## Installation on *Synology NAS*
 
 1. Place `tv_grab_xmltv_ch` script in your TVHeadend binary folder `/var/packages/tvheadend/target/bin/` :
-> `mv tv_grab_xmltv_ch /var/packages/tvheadend/target/bin/.`
+
+`mv tv_grab_xmltv_ch /var/packages/tvheadend/target/bin/.`
+
 2. Change owner and group by `sc-tvheadend:tvheadend` : 
-> `chown sc-tvheadend:tvheadend /var/packages/tvheadend/target/bin/tv_grab_xmltv_ch`
-3. Change permission to make it executable :  
-> `chmod 755 /var/packages/tvheadend/target/bin/tv_grab_xmltv_ch`
+
+`chown sc-tvheadend:tvheadend /var/packages/tvheadend/target/bin/tv_grab_xmltv_ch`
+
+3. Change permission to make it executable :
+
+`chmod 755 /var/packages/tvheadend/target/bin/tv_grab_xmltv_ch`
+
 4. Make a symbolic link in `/usr/local/bin` :
-> `ln -s /var/packages/tvheadend/target/bin/tv_grab_xmltv_ch /usr/local/bin/tv_grab_xmltv_ch`
+
+`ln -s /var/packages/tvheadend/target/bin/tv_grab_xmltv_ch /usr/local/bin/tv_grab_xmltv_ch`
+
 5. Restart your `TVHeadend Service` by Synology Application Manager.
+
 6. Set `XMLTV Ch` as Internal Grabber XMLTV on TVHeadend.
