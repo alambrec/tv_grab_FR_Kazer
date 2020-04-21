@@ -269,10 +269,10 @@ then
   fi
 
   if [ "--description" = "$OPTION" ] ; then
-    echo "XMLTV Fr"
+    echo "XMLTV Ch"
     exit
   fi
-  
+
   if [ "--capabilities" = "$OPTION" ] ; then
     echo "baseline"
     exit
