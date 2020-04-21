@@ -1,27 +1,30 @@
-# XML TV Grabber for TVheadend
-
-**:warning: Source from http://xmltv.dtdns.net is not available since September 2017**
+# French XML TV Grabber for TVHeadend
 
 This is a simple script to recover EPG guide for TVHeadend backend.
 It's optimized for Synology NAS but it must compatible on every Linux/GNU System. (Not on BSD like OSX)
 
-My script support 2 website for recover XMLTV :
- - https://www.kazer.org
- - http://xmltv.dtdns.net
- 
-Like I have some problem in using kazer.org, I add also support for http://xmltv.dtdns.net
+My script recovers XMLTV file from https://xmltv.ch.
 
-## Installation
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-1. Replace `userhash` or `username` on the script
- - for Kazer.org : replace at the line 8 `your_userhash_here` by your userhash on kazer.org (available on tab 'Mes Chaînes')
- - for Dtdns.net : replace at the line 9 `your_username_here` by your username on xmltv.dtdns.net.org 
-2. Place your script on your binary folder (for Synology NAS in `/usr/bin/`).
-3. Change owner and group : `chown root:root tv_grab_kazer` or `chown root:root tv_grab_telerama`
-4. Change permission to make it executable :  `chmod 755 tv_grab_kazer` or `chmod 755 tv_grab_telerama`
-5. Test your script in running like this : `tv_grab_kazer  --debug` or `tv_grab_telerama  --debug`
-  * you must see on the screen the content of XML.
-6. Set France Kazer or France Telerama like Internal Grabber XMLTV on TVHeadEnd.
+## Installation on *Synology NAS*
 
-## Tutorial for script of Kazer.org on NAS Synology DS212j (in French)
-http://www.inrepublica.fr/2013/06/11/un-vrai-guide-des-programmes-avec-tvheadend-tnt-fr/
+1. Place `tv_grab_xmltv_ch` script in your TVHeadend binary folder `/var/packages/tvheadend/target/bin/` :
+
+`mv tv_grab_xmltv_ch /var/packages/tvheadend/target/bin/.`
+
+2. Change owner and group by `sc-tvheadend:tvheadend` : 
+
+`chown sc-tvheadend:tvheadend /var/packages/tvheadend/target/bin/tv_grab_xmltv_ch`
+
+3. Change permission to make it executable :
+
+`chmod 755 /var/packages/tvheadend/target/bin/tv_grab_xmltv_ch`
+
+4. Make a symbolic link in `/usr/local/bin` :
+
+`ln -s /var/packages/tvheadend/target/bin/tv_grab_xmltv_ch /usr/local/bin/tv_grab_xmltv_ch`
+
+5. Restart your `TVHeadend Service` by Synology Application Manager.
+
+6. Set `XMLTV Ch` as Internal Grabber XMLTV on TVHeadend.
